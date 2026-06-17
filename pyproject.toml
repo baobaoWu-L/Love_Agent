@@ -1,0 +1,13 @@
+[project]
+name = "loveflow-agent"
+version = "0.2.0"
+description = "LoveFlow AI Agent - 自研大语言模型智能驾驶舱"
+authors = [{ name = "LoveBreaker" }]
+requires-python = ">=3.10"
+
+[project.scripts]
+loveflow-agent = "agent.main:cli"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"

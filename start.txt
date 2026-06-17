@@ -1,0 +1,166 @@
+╔══════════════════════════════════════════════════════════╗
+║              LoveFlow Agent 使用手册                     ║
+║        自研大语言模型智能驾驶舱 (v0.2.0)                  ║
+╚══════════════════════════════════════════════════════════╝
+
+项目路径: D:\LoveFlow_Agent
+Python 环境: D:\LoveFlow\.venv\Scripts\python（系统 Python 3.14 不支持 PyTorch）
+Python 运行: D:\LoveFlow\.venv\Scripts\python -m agent.main <子命令> [参数]
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+一、启动 LoveFlow 推理服务（必须先启动）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GPU 推理（推荐）:
+    D:\LoveFlow\.venv\Scripts\python D:\LoveFlow\backend\run_loveflow.py
+
+推理服务默认监听: http://localhost:8005
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+二、CLI 子命令
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+chat      交互式对话（默认）
+    D:\LoveFlow\.venv\Scripts\python -m agent.main
+    D:\LoveFlow\.venv\Scripts\python -m agent.main chat
+
+train     GPU 训练 LoveFlow 模型
+    D:\LoveFlow\.venv\Scripts\python -m agent.main train                       # 默认参数训练
+    D:\LoveFlow\.venv\Scripts\python -m agent.main train --epochs 10            # 训练 10 轮
+    D:\LoveFlow\.venv\Scripts\python -m agent.main train --epochs 5 --lr 1e-4   # 自定义学习率
+
+collect   从互联网采集数据并训练
+    D:\LoveFlow\.venv\Scripts\python -m agent.main collect --urls "https://example.com"              # 采集单个网页
+    D:\LoveFlow\.venv\Scripts\python -m agent.main collect --urls "url1,url2,url3"                   # 批量采集
+    D:\LoveFlow\.venv\Scripts\python -m agent.main collect --search "人工智能"                        # 搜索+采集
+    D:\LoveFlow\.venv\Scripts\python -m agent.main collect --urls "https://..." --auto-train         # 采集后自动训练
+    D:\LoveFlow\.venv\Scripts\python -m agent.main collect --search "LLM" --auto-train               # 搜索+采集+训练
+
+status    查看系统状态报告
+    D:\LoveFlow\.venv\Scripts\python -m agent.main status
+
+install   安装/补全依赖
+    D:\LoveFlow\.venv\Scripts\python -m agent.main install
+
+daemon    后台守护模式
+    D:\LoveFlow\.venv\Scripts\python -m agent.main daemon
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+三、REPL 内置命令（进入 chat 后使用）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/help           显示帮助
+/exit           退出
+/memory         查看记忆列表
+/tasks          查看任务列表
+/status         系统状态报告
+/train          启动训练（默认 3 epochs）
+/modules        查看已加载模块
+/save           强制保存检查点
+/collect        数据采集（见下方示例）
+
+采集示例:
+    /collect url https://example.com              采集单个网页
+    /collect search 深度学习最新进展               搜索并采集
+    /collect train https://example.com             采集后自动训练
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+四、对话技巧（chat 模式中的自然语言）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+系统状态:
+    "检查系统状态"
+    "看看 CPU 是不是过高"
+    "LoveFlow 推理服务在运行吗"
+
+记忆:
+    "帮我记住这个配置"
+    "之前我们聊过什么"
+
+任务追踪:
+    "创建一个任务：优化推理速度"
+    "完成 T1 任务"
+
+训练:
+    "开始训练"
+    "训练 5 个 epoch"
+    "查看训练进度"
+
+数据采集:
+    "搜索关于深度学习的资料来训练"
+    "帮我采集 https://example.com 来训练"
+    "采集这个网站并训练"
+
+代码生成（自编译）:
+    "帮我写一个函数统计日志"
+    "生成一个数据可视化脚本"
+
+人像识别（需要 face_recognition 库）:
+    "记住这张脸为张三"
+    "这张图里有谁"
+
+网络/监控:
+    "扫描局域网"
+    "拍照"
+    "连接摄像头"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+五、直接训练（不通过 Agent，使用 GPU）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    D:\LoveFlow\.venv\Scripts\python D:\LoveFlow\backend\run_loveflow_train.py --epochs 5
+
+参数说明:
+    --epochs                   训练轮数（默认 5）
+    --lr                       学习率（默认 0.0002）
+    --lora_r                   LoRA 秩（默认 8）
+    --batch_size               批次大小（GPU 推荐 4-8，默认 4）
+    --gradient_accumulation    梯度累积步数（默认 2）
+    --max_seq_length           最大序列长度（默认 1024）
+    --data_source              数据来源（mysql 或 web）
+
+示例:
+    D:\LoveFlow\.venv\Scripts\python D:\LoveFlow\backend\run_loveflow_train.py --epochs 10 --batch_size 8
+    D:\LoveFlow\.venv\Scripts\python D:\LoveFlow\backend\run_loveflow_train.py --epochs 3 --lr 1e-4 --lora_r 16
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+六、环境变量
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LOVEFLOW_DIR              LoveFlow 项目路径（默认 D:/LoveFlow）
+LOVEFLOW_MODEL_DIR        模型产出路径（默认 D:/LoveFlow/loveflow_model）
+LOVEFLOW_BASE_MODEL       基础模型路径（默认 D:/LLM/LoveFlow）
+LOVEFLOW_INFER_HOST       推理服务器地址（默认 localhost）
+LOVEFLOW_INFER_PORT       推理服务器端口（默认 8005）
+MYSQL_SERVER              MySQL 地址（默认 127.0.0.1）
+MYSQL_PORT                MySQL 端口（默认 3306）
+MYSQL_USER                MySQL 用户（默认 root）
+MYSQL_PASSWORD            MySQL 密码（默认 root）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+七、常用工作流
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+完整流程（从采集到训练）:
+    1. python -m agent.main
+       → 进入交互对话
+    2. "搜索关于最新 AI 技术的资料"
+       → Agent 搜索互联网，爬取内容，生成训练数据
+    3. "用这些数据训练 5 个 epoch"
+       → Agent 启动 GPU 训练
+    4. /status
+       → 查看训练进度
+    5. 训练完成后重启推理服务
+       → python D:\LoveFlow\backend\run_loveflow.py
+    6. 对话测试新模型
+       → 在 chat 中直接对话
+
+快速训练（已有数据）:
+    D:\LoveFlow\.venv\Scripts\python -m agent.main train --epochs 10

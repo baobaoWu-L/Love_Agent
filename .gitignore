@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+*.egg
+
+# Environment
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Memory data (user data, not code)
+memory/*.db
+memory/*.json
+memory/*.md
+memory/tasks/
+memory/generated_code/
+memory/notes.md
+memory/snapshots/
+memory/cameras/
