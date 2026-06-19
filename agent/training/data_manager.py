@@ -98,7 +98,7 @@ class TrainingDataManager:
             }
 
         except Exception as e:
-            logger.error(f"获取训练数据统计失败: {e}")
+            logger.debug(f"获取训练数据统计失败: {e}")
             return {
                 "total": 0,
                 "source_distribution": {},
@@ -263,7 +263,6 @@ class TrainingDataManager:
         stats = self.get_stats()
 
         if "error" in stats and stats["total"] == 0:
-            logger.warning("获取训练数据上下文失败")
             return None
 
         # 格式化来源分布

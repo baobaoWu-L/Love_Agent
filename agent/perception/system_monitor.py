@@ -144,7 +144,7 @@ class SystemMonitor:
                 "available": True,
             }
         except Exception as e:
-            logger.error(f"获取磁盘信息失败: {e}")
+            logger.debug(f"获取磁盘信息失败({path}): {e}")
             return {"error": str(e), "available": False}
 
     def get_all_disks(self) -> list[dict]:
@@ -171,13 +171,13 @@ class SystemMonitor:
                         "free": round(usage.free / (1024**3), 2),
                         "percent": usage.percent,
                     })
-                except PermissionError:
-                    # 某些挂载点可能无权限访问
+                except Exception:
+                    # 某些挂载点可能无权限访问或 C 扩展层异常
                     results.append({
                         "device": part.device,
                         "mountpoint": part.mountpoint,
                         "fstype": part.fstype,
-                        "error": "无权限访问",
+                        "error": "无法访问此分区",
                     })
             return results
         except Exception as e:

@@ -62,9 +62,13 @@ def build_agent_context(
                 remaining -= extra_tokens
                 stats["extra"] += extra_tokens
 
-    # 3) 记忆搜索
+    # 3) 记忆搜索（只在记忆/回忆相关指令时触发）
     if include_memory:
-        memory_results = search_memory(user_input, limit=5)
+        memory_keywords = ["记得", "记忆", "回忆", "之前", "忘记", "忘了", "记住", "memor"]
+        if any(kw in user_input.lower() for kw in memory_keywords):
+            memory_results = search_memory(user_input, limit=5)
+        else:
+            memory_results = []
         memory_text = ""
         for r in memory_results:
             memory_text += f"● [{r['importance']}] {r['title']}: {r['content'][:200]}\n"

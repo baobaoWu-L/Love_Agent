@@ -90,7 +90,7 @@ class NetworkScanner:
             self._last_scan_result = devices
             self._last_scan_time = time.time()
 
-            logger.info(f"ARP 扫描完成，发现 {len(devices)} 个设备")
+            logger.debug(f"ARP 扫描完成，发现 {len(devices)} 个设备")
             return devices
 
         except subprocess.TimeoutExpired:
@@ -438,7 +438,7 @@ class NetworkScanner:
         """
         返回网络状态摘要，供 Agent 上下文注入
 
-        快速扫描局域网并检测关键服务状态，格式化为简短摘要。
+        使用缓存结果，同一分钟不重复扫描。
 
         Returns:
             Optional[str]: 网络状态文本
@@ -453,22 +453,23 @@ class NetworkScanner:
             else:
                 parts.append("本机: 未知")
 
-            # 局域网设备数
-            devices = self.scan_arp()
+            # 局域网设备数（缓存60秒）
+            now = time.time()
+            if now - self._last_scan_time > 60:
+                devices = self.scan_arp()
+            else:
+                devices = self._last_scan_result or []
             parts.append(f"局域网设备: {len(devices)} 台")
 
             if devices:
-                # 检查 LoveFlow 服务是否在局域网中
-                loveflow_hosts = []
-                for d in devices:
-                    svc_check = self.detect_services(d["ip"])
-                    for svc in svc_check.get("services", {}).values():
-                        if svc.get("port") == 8005 and svc.get("open"):
-                            loveflow_hosts.append(d["ip"])
-                            break
-
-                if loveflow_hosts:
-                    parts.append(f"LoveFlow 服务: {', '.join(loveflow_hosts)}")
+                # 检查 LoveFlow 服务（只扫网关+本机，不扫所有设备）
+                loveflow_ips = []
+                check_ips = [d["ip"] for d in devices[:3]]  # 只检查前3个设备
+                for ip in check_ips:
+                    if self._check_port(ip, 8005, timeout=1):
+                        loveflow_ips.append(ip)
+                if loveflow_ips:
+                    parts.append(f"LoveFlow 服务: {', '.join(loveflow_ips)}")
 
                 # 检查网关
                 if local_ip:

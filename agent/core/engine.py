@@ -218,7 +218,7 @@ class LoveFlowAgent:
                     if ctx:
                         extra_contexts.append((ctx, getattr(mod_instance, "context_priority", 10)))
                 except Exception as e:
-                    logger.warning(f"模块 [{mod_name}] 上下文获取失败: {e}")
+                    logger.debug(f"模块 [{mod_name}] 上下文获取失败: {e}")
 
         # 2) 构建上下文
         context_text, stats = build_agent_context(

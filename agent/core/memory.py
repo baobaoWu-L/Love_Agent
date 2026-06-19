@@ -125,15 +125,30 @@ def _blob_to_vector(blob: bytes) -> list[float]:
     return list(struct.unpack(f"{len(blob) // 4}f", blob))
 
 
+def _sanitize_fts_query(text: str) -> str:
+    """清理 FTS5 查询文本，移除特殊语法字符，避免查询报错"""
+    # FTS5 特殊字符: ^ * + - ~ ( ) { } [ ] " : < > |
+    # 替换为空格保留分词，避免被解析为语法操作符
+    import re
+    text = re.sub(r'[+\-~(){}[\]":<>|*^]', ' ', text)
+    # 压缩多余空格
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text if text else ""
+
+
 def search_memory(query: str, limit: int = 10, doc_type: Optional[str] = None, tags: Optional[list[str]] = None) -> list[dict]:
     """
     FTS5 全文搜索，按相关性排名
     支持按 doc_type 和标签过滤
     """
+    safe_query = _sanitize_fts_query(query)
+    if not safe_query:
+        return []
+
     conn = get_conn()
     try:
         conditions = []
-        params = [query]
+        params = [safe_query]
 
         if doc_type:
             conditions.append("m.doc_type = ?")

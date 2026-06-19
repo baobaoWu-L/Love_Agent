@@ -256,7 +256,7 @@ class TrainingMonitor:
             }
 
         except Exception as e:
-            logger.error(f"查询训练指标失败: {e}")
+            logger.debug(f"查询训练指标失败: {e}")
             return {
                 "latest_step": 0,
                 "latest_loss": 0.0,

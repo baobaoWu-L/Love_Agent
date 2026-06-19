@@ -38,7 +38,7 @@ class LoveFlowClient:
             resp = requests.post(
                 f"{self.base_url}/v1/chat",
                 json=data,
-                timeout=120,
+                timeout=300,
             )
             result = resp.json()
             return result.get("response")
@@ -57,15 +57,20 @@ class LoveFlowClient:
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": max_tokens,
                 "temperature": temperature,
-                "stream": True,
             }
             with httpx.stream("POST", f"{self.base_url}/v1/chat/stream", json=data, timeout=120) as resp:
                 for line in resp.iter_lines():
                     if line.startswith("data: "):
-                        token = line[6:]
-                        if token == "[DONE]":
-                            break
-                        yield token
+                        payload = line[6:]
+                        # 解析 JSON 格式的 SSE 数据
+                        try:
+                            obj = json.loads(payload)
+                            if obj.get("done"):
+                                break
+                            if "content" in obj:
+                                yield obj["content"]
+                        except json.JSONDecodeError:
+                            yield payload
         except Exception as e:
             yield f"[流式错误: {e}]"
 
