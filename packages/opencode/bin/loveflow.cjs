@@ -19,6 +19,14 @@ function findNativeBinary() {
   return null
 }
 
+function findLocalConfig(start) {
+  for (let directory = path.resolve(start); ; directory = path.dirname(directory)) {
+    const config = path.join(directory, ".mimocode", "mimocode.jsonc")
+    if (fs.existsSync(config)) return config
+    if (path.dirname(directory) === directory) return undefined
+  }
+}
+
 const launchCwd = process.env.PWD || process.cwd()
 
 // 检查预编译二进制是否存在
@@ -55,7 +63,7 @@ for (const dir of rootDirs) {
           env: {
             ...process.env,
             PWD: launchCwd,
-            MIMOCODE_CONFIG: process.env.MIMOCODE_CONFIG || path.join(dir, ".mimocode", "mimocode.jsonc"),
+            MIMOCODE_CONFIG: process.env.MIMOCODE_CONFIG || findLocalConfig(dir) || "",
             MIMOCODE_FORCE_MODEL: process.env.MIMOCODE_FORCE_MODEL || "loveflow/negentropy-claude-opus-4.7-9b",
             MIMOCODE_DISABLE_EXTERNAL_SKILLS: process.env.MIMOCODE_DISABLE_EXTERNAL_SKILLS || "1",
           },
