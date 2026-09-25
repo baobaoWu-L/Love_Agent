@@ -45,12 +45,11 @@ for (const dir of rootDirs) {
         [
           "run",
           "--conditions=browser",
-          `--tsconfig-override=${path.join(dir, "tsconfig.json")}`,
           path.join(dir, "src", "index.ts"),
           ...process.argv.slice(2),
         ],
         {
-          cwd: launchCwd,
+          cwd: dir,
           stdio: "inherit",
           shell: true,
           env: {
