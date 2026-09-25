@@ -2899,6 +2899,10 @@ NOTE: At any point in time through this workflow you should feel free to ask the
 
             if (classification.type === "final" && classification.degraded)
               yield* slog.warn("degraded final on abnormal finish", { finish: handle.message.finish })
+            if (result === "overflow" && classification.type === "final") {
+              yield* slog.info("deferring overflow compaction until the next user turn")
+              return "break" as const
+            }
             if (result === "stop") return "break" as const
             if (!isBoundedComputation && result === "overflow") {
               // Subagent overflow → per-actor compaction. Insert a boundary
