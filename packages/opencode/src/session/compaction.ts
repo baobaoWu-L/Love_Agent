@@ -276,6 +276,9 @@ export const layer: Layer.Layer<
         cfg,
         model,
       })
+      const currentRequest = parent.parts
+        .flatMap((part) => (part.type === "text" && !part.synthetic && !part.ignored ? [part.text] : []))
+        .join("\n")
       // Allow plugins to inject context or replace compaction prompt.
       const compacting = yield* plugin.trigger(
         "experimental.session.compacting",
@@ -306,7 +309,14 @@ export const layer: Layer.Layer<
 [Construct a structured list of relevant files that have been read, edited, or created that pertain to the task at hand. If all the files in a directory are relevant, include the path to the directory.]
 ---`
 
-      const prompt = compacting.prompt ?? [defaultPrompt, ...compacting.context].join("\n\n")
+      const focusPrompt = [
+        "This is internal context compaction, not a response to the user. Do not answer the current request or expose reasoning.",
+        "The latest user request below is the only active task. Treat earlier independent requests as completed; exclude them unless their facts are directly needed for the latest request.",
+        "Preserve only relevant instructions, decisions, discoveries, and unfinished work. Do not resume or answer an unrelated earlier question. The latest request will be sent again after compaction.",
+        "## Latest user request",
+        currentRequest.slice(0, 2000) || "(No plain text request)",
+      ].join("\n\n")
+      const prompt = [compacting.prompt ?? defaultPrompt, ...compacting.context, focusPrompt].join("\n\n")
       const msgs = structuredClone(selected.head)
       yield* plugin.trigger("experimental.chat.messages.transform", {}, { messages: msgs })
       const modelMessages = yield* MessageV2.toModelMessagesEffect(msgs, model, { stripMedia: true })

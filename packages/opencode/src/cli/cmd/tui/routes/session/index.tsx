@@ -1083,7 +1083,7 @@ export function Session() {
               scrollAcceleration={scrollAcceleration()}
             >
               <box height={1} />
-              <For each={messages()}>
+              <For each={messages().filter((message) => !(message.role === "assistant" && message.summary))}>
                 {(message, index) => (
                   <Switch>
                     <Match when={message.id === revert()?.messageID}>
