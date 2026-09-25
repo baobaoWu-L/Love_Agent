@@ -55,6 +55,7 @@ for (const dir of rootDirs) {
           env: {
             ...process.env,
             PWD: launchCwd,
+            MIMOCODE_CONFIG: process.env.MIMOCODE_CONFIG || path.join(dir, ".mimocode", "mimocode.jsonc"),
             MIMOCODE_DISABLE_EXTERNAL_SKILLS: process.env.MIMOCODE_DISABLE_EXTERNAL_SKILLS || "1",
           },
         },
