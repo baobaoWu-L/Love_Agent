@@ -28,3 +28,22 @@ memory/generated_code/
 memory/notes.md
 memory/snapshots/
 memory/cameras/
+
+# JavaScript dependencies and generated output
+node_modules/
+**/node_modules/
+.artifacts/
+**/.artifacts/
+
+# Python environments
+.venv/
+**/.venv/
+
+# Nested source checkout (kept locally, not part of this repository)
+/MiMo-Code/
+
+# Local Claude Code preferences
+.claude/settings.local.json
+
+# Private runtime memory from the archived Python agent
+/agent_old/memory/
