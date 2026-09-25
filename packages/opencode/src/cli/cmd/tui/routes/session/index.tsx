@@ -1083,7 +1083,16 @@ export function Session() {
               scrollAcceleration={scrollAcceleration()}
             >
               <box height={1} />
-              <For each={messages().filter((message) => !(message.role === "assistant" && message.summary))}>
+              <For
+                each={messages().filter(
+                  (message) =>
+                    !(message.role === "assistant" && message.summary) &&
+                    !(message.role === "user" &&
+                      sync.data.part[message.id]?.some(
+                        (part) => "metadata" in part && part.metadata?.compaction_replay === true,
+                      )),
+                )}
+              >
                 {(message, index) => (
                   <Switch>
                     <Match when={message.id === revert()?.messageID}>

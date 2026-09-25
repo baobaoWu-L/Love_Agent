@@ -283,7 +283,10 @@ export const layer: Layer.Layer<
 
       const cfg = yield* config.get()
       const windowSize = usable({ cfg, model: input.model })
-      if (windowSize === 0) return
+      // Checkpoint prompts need substantial headroom of their own. Small local
+      // models are handled by ordinary compaction; don't let a user supplied
+      // checkpoint threshold turn every response into a configuration error.
+      if (windowSize < 25_000) return
       const raw = cfg.checkpoint?.thresholds ?? defaultThresholdsFor(windowSize)
 
       // resolveThresholds throws on invalid config; we let that propagate so

@@ -247,11 +247,27 @@ export const layer: Layer.Layer<
             parts: MessageV2.Part[]
           }
         | undefined
+      let alreadyCompleted = false
       if (input.overflow) {
         const idx = input.messages.findIndex((m) => m.info.id === input.parentID)
         for (let i = idx - 1; i >= 0; i--) {
           const msg = input.messages[i]
           if (msg.info.role === "user" && !msg.parts.some((p) => p.type === "compaction")) {
+            const alreadyAnswered = input.messages.slice(i + 1, idx).some((entry) => {
+              if (entry.info.role !== "assistant" || !entry.info.finish || entry.info.finish === "tool-calls")
+                return false
+              if (entry.info.error) return false
+              return (
+                entry.info.structured !== undefined ||
+                entry.parts.some(
+                  (part) => part.type === "text" && !part.synthetic && !part.ignored && part.text.trim().length > 0,
+                )
+              )
+            })
+            if (alreadyAnswered) {
+              alreadyCompleted = true
+              break
+            }
             replay = { info: msg.info, parts: msg.parts }
             messages = input.messages.slice(0, i)
             break
@@ -276,7 +292,9 @@ export const layer: Layer.Layer<
         cfg,
         model,
       })
-      const currentRequest = parent.parts
+      // Overflow compaction is attached to a synthetic boundary user message;
+      // the real request is the one copied into `replay` above.
+      const currentRequest = (replay?.parts ?? parent.parts)
         .flatMap((part) => (part.type === "text" && !part.synthetic && !part.ignored ? [part.text] : []))
         .join("\n")
       // Allow plugins to inject context or replace compaction prompt.
@@ -388,7 +406,7 @@ export const layer: Layer.Layer<
         })
       }
 
-      if (result === "continue" && input.auto) {
+      if (result === "continue" && input.auto && !alreadyCompleted) {
         if (replay) {
           const original = replay.info
           const replayMsg = yield* session.updateMessage({
@@ -411,6 +429,9 @@ export const layer: Layer.Layer<
                 : part
             yield* session.updatePart({
               ...replayPart,
+              ...("metadata" in replayPart
+                ? { metadata: { ...replayPart.metadata, compaction_replay: true } }
+                : {}),
               id: PartID.ascending(),
               messageID: replayMsg.id,
               sessionID: input.sessionID,
