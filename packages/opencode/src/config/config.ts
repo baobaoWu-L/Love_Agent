@@ -928,6 +928,15 @@ export const layer = Layer.effect(
           result.compaction = { ...result.compaction, prune: false }
         }
 
+        if (process.env.MIMOCODE_FORCE_MODEL) {
+          result.model = process.env.MIMOCODE_FORCE_MODEL
+          result.small_model = process.env.MIMOCODE_FORCE_MODEL
+          result.enabled_providers = [process.env.MIMOCODE_FORCE_MODEL.split("/")[0]]
+          result.agent = Object.fromEntries(
+            Object.entries(result.agent ?? {}).map(([name, agent]) => [name, { ...agent, model: process.env.MIMOCODE_FORCE_MODEL }]),
+          )
+        }
+
         return {
           config: result,
           directories,

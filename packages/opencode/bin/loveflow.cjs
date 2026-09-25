@@ -56,6 +56,7 @@ for (const dir of rootDirs) {
             ...process.env,
             PWD: launchCwd,
             MIMOCODE_CONFIG: process.env.MIMOCODE_CONFIG || path.join(dir, ".mimocode", "mimocode.jsonc"),
+            MIMOCODE_FORCE_MODEL: process.env.MIMOCODE_FORCE_MODEL || "loveflow/negentropy-claude-opus-4.7-9b",
             MIMOCODE_DISABLE_EXTERNAL_SKILLS: process.env.MIMOCODE_DISABLE_EXTERNAL_SKILLS || "1",
           },
         },
