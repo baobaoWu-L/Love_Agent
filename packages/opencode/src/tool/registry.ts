@@ -84,6 +84,30 @@ export function renderWorkflowCatalog(): string {
 }
 
 const fallbackWarned = new Set<string>()
+const LOCAL_TOOL_DESCRIPTIONS: Record<string, string> = {
+  [ActorTool.id]: "Delegate work to a subagent.",
+  [BashTool.id]: "Run a shell command in the current workspace.",
+  [ReadTool.id]: "Read files from the workspace.",
+  [GlobTool.id]: "Find workspace files by path pattern.",
+  [GrepTool.id]: "Search text in workspace files.",
+  [EditTool.id]: "Replace text in a workspace file.",
+  [WriteTool.id]: "Create or overwrite a workspace file.",
+  [WebFetchTool.id]: "Fetch and read a web page.",
+  [WebSearchTool.id]: "Search the web.",
+  [CodeSearchTool.id]: "Search public code repositories.",
+  [SkillTool.id]: "Load a named skill.",
+  [ApplyPatchTool.id]: "Apply a patch to workspace files.",
+  [ChangeDirectoryTool.id]: "Change the current workspace directory.",
+  [LspTool.id]: "Query language-server code information.",
+  [PlanExitTool.id]: "Exit plan mode.",
+  [MemoryTool.id]: "Search or update saved memory.",
+  [HistoryTool.id]: "Search this conversation's history.",
+  [TaskTool.id]: "Create or update a work item.",
+  [WorkflowTool.id]: "Run or inspect a workflow.",
+  [QuestionTool.id]: "Ask the user a question.",
+  [InvalidTool.id]: "Report an invalid tool call.",
+}
+
 function warnShellFallbackOnce(id: string) {
   if (fallbackWarned.has(id)) return
   fallbackWarned.add(id)
@@ -346,7 +370,7 @@ export const layer = Layer.effect(
             description: tool.description,
             parameters: tool.parameters,
           }
-          yield* plugin.trigger("tool.definition", { toolID: tool.id }, output)
+          if (input.providerID !== "loveflow") yield* plugin.trigger("tool.definition", { toolID: tool.id }, output)
           const style = resolveStyle(tool.id)
           const useShell = style === "shell" && tool.shell !== undefined
           if (style === "shell" && !tool.shell) {
@@ -354,16 +378,19 @@ export const layer = Layer.effect(
           }
           const effective: Tool.Def = useShell ? shellWrap(tool) : tool
           const description = useShell ? tool.shell!.description : output.description
+          const local = input.providerID === "loveflow"
           return {
             id: tool.id,
-            description: [
-              description,
-              tool.id === ActorTool.id ? yield* describeTask(input.agent) : undefined,
-              tool.id === SkillTool.id ? yield* describeSkill(input.agent) : undefined,
-              tool.id === WorkflowTool.id ? yield* describeWorkflow() : undefined,
-            ]
-              .filter(Boolean)
-              .join("\n"),
+            description: local
+              ? LOCAL_TOOL_DESCRIPTIONS[tool.id] ?? description.replace(/\s+/g, " ").slice(0, 180)
+              : [
+                  description,
+                  tool.id === ActorTool.id ? yield* describeTask(input.agent) : undefined,
+                  tool.id === SkillTool.id ? yield* describeSkill(input.agent) : undefined,
+                  tool.id === WorkflowTool.id ? yield* describeWorkflow() : undefined,
+                ]
+                  .filter(Boolean)
+                  .join("\n"),
             parameters: useShell ? effective.parameters : output.parameters,
             execute: effective.execute,
             formatValidationError: effective.formatValidationError,

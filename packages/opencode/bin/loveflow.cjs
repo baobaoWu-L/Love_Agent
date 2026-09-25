@@ -19,6 +19,8 @@ function findNativeBinary() {
   return null
 }
 
+const launchCwd = process.env.PWD || process.cwd()
+
 // 检查预编译二进制是否存在
 const native = findNativeBinary()
 if (native) {
@@ -38,13 +40,13 @@ for (const dir of rootDirs) {
   try {
     const { name } = JSON.parse(fs.readFileSync(pkg, "utf-8"))
     if (name === "@loveflow-ai/cli" || name === "loveflow-agent") {
-      const r = spawnSync("bun", ["run", "--conditions=browser", "src/index.ts", ...process.argv.slice(2)], {
-        cwd: dir,
+      const r = spawnSync("bun", ["run", "--conditions=browser", path.join(dir, "src", "index.ts"), ...process.argv.slice(2)], {
+        cwd: launchCwd,
         stdio: "inherit",
         shell: true,
         env: {
           ...process.env,
-          PWD: process.env.PWD || process.cwd(),
+          PWD: launchCwd,
           MIMOCODE_DISABLE_EXTERNAL_SKILLS: process.env.MIMOCODE_DISABLE_EXTERNAL_SKILLS || "1",
         },
       })

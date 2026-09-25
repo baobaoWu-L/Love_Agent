@@ -1231,6 +1231,20 @@ export function schema(model: Provider.Model, schema: JSONSchema.BaseSchema | JS
   }
   */
 
+  if (model.providerID === "loveflow") {
+    const compactDescriptions = (value: unknown): unknown => {
+      if (Array.isArray(value)) return value.map(compactDescriptions)
+      if (typeof value !== "object" || value === null) return value
+      return Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+          key,
+          key === "description" && typeof item === "string" ? item.replace(/\s+/g, " ").slice(0, 120) : compactDescriptions(item),
+        ]),
+      )
+    }
+    schema = compactDescriptions(schema) as JSONSchema.BaseSchema | JSONSchema7
+  }
+
   // Many providers reject root-level `anyOf`/`oneOf` in tool schemas:
   // - OpenAI/Azure: "schema must have type 'object' and not have 'oneOf'/'anyOf'"
   // - Bedrock: "input_schema.type: Field required"
