@@ -40,16 +40,26 @@ for (const dir of rootDirs) {
   try {
     const { name } = JSON.parse(fs.readFileSync(pkg, "utf-8"))
     if (name === "@loveflow-ai/cli" || name === "loveflow-agent") {
-      const r = spawnSync("bun", ["run", "--conditions=browser", path.join(dir, "src", "index.ts"), ...process.argv.slice(2)], {
-        cwd: launchCwd,
-        stdio: "inherit",
-        shell: true,
-        env: {
-          ...process.env,
-          PWD: launchCwd,
-          MIMOCODE_DISABLE_EXTERNAL_SKILLS: process.env.MIMOCODE_DISABLE_EXTERNAL_SKILLS || "1",
+      const r = spawnSync(
+        "bun",
+        [
+          "run",
+          "--conditions=browser",
+          `--tsconfig-override=${path.join(dir, "tsconfig.json")}`,
+          path.join(dir, "src", "index.ts"),
+          ...process.argv.slice(2),
+        ],
+        {
+          cwd: launchCwd,
+          stdio: "inherit",
+          shell: true,
+          env: {
+            ...process.env,
+            PWD: launchCwd,
+            MIMOCODE_DISABLE_EXTERNAL_SKILLS: process.env.MIMOCODE_DISABLE_EXTERNAL_SKILLS || "1",
+          },
         },
-      })
+      )
       if (!r.error) process.exit(r.status ?? 0)
     }
   } catch {}
